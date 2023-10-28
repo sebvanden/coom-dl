@@ -92,7 +92,7 @@ class _MyHomePageState extends State<MyHomePage> {
   TextEditingController input = TextEditingController();
   // ignore: avoid_init_to_null
   String? directory = null;
-  String? url = null;
+  String? url;
   int total = 0;
   int downloaded = 0;
   String progress = "0 %";
@@ -106,7 +106,7 @@ class _MyHomePageState extends State<MyHomePage> {
   dynamic creator = UniqueKey().toString();
   bool cancel = false;
   int threads = 0;
-  bool Debug = true;
+  bool debug = true;
   List<Map<String, dynamic>> log = [];
   ScrollController _scrollController = ScrollController();
   void _incrementCounter() {
@@ -259,6 +259,10 @@ class _MyHomePageState extends State<MyHomePage> {
                           // Operation was canceled by the user.
                           return;
                         } else {
+                          File historyFile = File("$directoryPath/history.txt");
+                          if (historyFile.existsSync()) {
+                            historyFile.readAsString().then((value) => input.text = value);
+                          }
                           setState(() {
                             directory = directoryPath;
                           });
@@ -273,11 +277,11 @@ class _MyHomePageState extends State<MyHomePage> {
             ElevatedButton(
                 onPressed: () {
                   setState(() {
-                    Debug = !Debug;
+                    debug = !debug;
                   });
                 },
                 child: Text((() {
-                  if (!Debug) {
+                  if (!debug) {
                     return "Turn on Logs";
                   } else {
                     return "Turn off Logs";
@@ -287,7 +291,7 @@ class _MyHomePageState extends State<MyHomePage> {
           const SizedBox(
             height: 20,
           ),
-          if (Debug && isLoading && isCrawled) ...[
+          if (debug && isLoading && isCrawled) ...[
             Flexible(
                 child: Container(
               width: MediaQuery.of(context).size.width,
@@ -341,6 +345,9 @@ class _MyHomePageState extends State<MyHomePage> {
                         cancel = false;
                         downloadAlbums = 0; //UI View
                       });
+                      if (url != null) {
+                        await File("$directory/history.txt").writeAsString(url ?? "");
+                      }
                       List<String> s = url!.split("\n");
                       for (int i = 0; i < s.length; i++) {
                         if (s[i].trim().isEmpty) {
@@ -356,6 +363,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           cancel = false;
                         });
                         bool ok = false;
+                        bool ignore = false;
                         int? typer = null;
                         // W.I.P
                         // Erome
@@ -373,6 +381,9 @@ class _MyHomePageState extends State<MyHomePage> {
                             .hasMatch(s[i].trim())) {
                           typer = 1;
                           ok = true;
+                        } else if (RegExp(r'^--.+$').hasMatch(s[i].trim())) {
+                          ok = false;
+                          ignore = true;
                         } else {
                           ok = false;
                         }
@@ -468,7 +479,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             downloaded = 0;
                             total = 0;
                           });
-                        } else {
+                        } else if (!ignore) {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             backgroundColor: Colors.red.withAlpha(120),
                             content: Text(
@@ -487,7 +498,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         threads = 0;
                         downloaded = 0;
                         log.clear();
-                        Debug = true;
+                        debug = true;
                         input.clear();
                       });
                     }
