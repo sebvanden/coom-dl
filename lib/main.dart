@@ -392,7 +392,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           setState(() {
                             isDone = false;
                           });
-
+                          
+                          List<String> sData = s[i].trim().split(">");
                           setState(() {
                             isLoading = true;
                             //oneTime = true;
@@ -405,7 +406,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                   },
                                   typer: typer,
                                   direct: mem_dir,
-                                  url: s[i].trim(),
+                                  url: sData[0],
+                                  limiteDate: sData.length>1 ? sData[1]: "",
                                   onThreadchange: (value) {
                                     setState(() {
                                       threads = value;
