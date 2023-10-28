@@ -93,8 +93,10 @@ class CybCrawl {
         print(threads_used);
         onThreadchange(threads_used);
         String? folderDate;
+        String? title;
         try {
           folderDate = contents_a[i].querySelector("footer > time")?.text.trim().replaceAll(RegExp(r':'), '-');
+          title = contents_a[i].querySelector("header")?.text.trim();
         } catch (e) {
           folderDate = "-";
           print('Something really unknown: $e');
@@ -109,6 +111,7 @@ class CybCrawl {
             threads_used,
             direct.toString(),
             folderDate,
+            title,
           ],
         );
         isoList.add(iso);
@@ -152,6 +155,7 @@ class CybCrawl {
     String type,
     String dire,
     String folderDate,
+    String? title,
   ) async {
     print("Media Downloader");
     print(imageURL);
@@ -195,6 +199,9 @@ class CybCrawl {
           ?.send({'title': '$downloadName', 'status': 'retry'});
     }
     var incoming = await http.Client().send(http.Request('GET', imageURL));
+    
+    await File("$path/info.txt").writeAsString(title ?? "not title");
+        
     await f.create().whenComplete(() => print("File created"));
     var sink = f.openWrite();
 
@@ -224,6 +231,7 @@ class CybCrawl {
     int thread = args[3];
     String dire = args[4];
     String folderDate = args[5];
+    String? title = args[6];
     print("THREAD: $thread OCCUPIED");
     try {
       await http.get(Uri.parse(URL)).then((value) async {
@@ -246,6 +254,7 @@ class CybCrawl {
                 "Photos",
                 dire,
                 folderDate,
+                title,
               );
             } catch (e) {
               print(e);
@@ -263,6 +272,7 @@ class CybCrawl {
                 "Videos",
                 dire,
                 folderDate,
+                title,
               );
             } catch (e) {
               print(e);
