@@ -92,6 +92,13 @@ class CybCrawl {
         threads_used++;
         print(threads_used);
         onThreadchange(threads_used);
+        String? folderDate;
+        try {
+          folderDate = contents_a[i].querySelector("footer > time")?.text.trim().replaceAll(RegExp(r':'), '-');
+        } catch (e) {
+          folderDate = "-";
+          print('Something really unknown: $e');
+        }
         Isolate? iso;
         iso = await Isolate.spawn(
           creator_parallel_download,
@@ -101,6 +108,7 @@ class CybCrawl {
             creator_html.innerHtml,
             threads_used,
             direct.toString(),
+            folderDate,
           ],
         );
         isoList.add(iso);
@@ -143,13 +151,14 @@ class CybCrawl {
     String creator,
     String type,
     String dire,
+    String folderDate,
   ) async {
     print("Media Downloader");
     print(imageURL);
     bool backup = false;
-    String path = "$dire/$creator/$type";
+    String path = "$dire/$creator/$type/$folderDate";
     var uuid = const Uuid().v4();
-    String backupPath = "$dire/${uuid}/$type";
+    String backupPath = "$dire/${uuid}/$type/$folderDate";
 
     await Directory(path)
         .create(recursive: true)
@@ -214,6 +223,7 @@ class CybCrawl {
     String creator = args[2];
     int thread = args[3];
     String dire = args[4];
+    String folderDate = args[5];
     print("THREAD: $thread OCCUPIED");
     try {
       await http.get(Uri.parse(URL)).then((value) async {
@@ -235,6 +245,7 @@ class CybCrawl {
                 creator,
                 "Photos",
                 dire,
+                folderDate,
               );
             } catch (e) {
               print(e);
@@ -251,6 +262,7 @@ class CybCrawl {
                 creator,
                 "Videos",
                 dire,
+                folderDate,
               );
             } catch (e) {
               print(e);
