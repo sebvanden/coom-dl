@@ -22,7 +22,8 @@ class CybCrawl {
       required direct,
       required Function(Map<String, dynamic> value) log,
       required bool Function() isContinue,
-      required typer}) async {
+      required typer,
+      required String limiteDate}) async {
     dom.Document html;
     http.Response response;
     if (typer == null) {
@@ -88,11 +89,7 @@ class CybCrawl {
     print(threads_used);
     for (var i = 0; i < contents_a.length; i++) {
       if ((threads_used < SysInfo.cores.length) && isContinue()) {
-        print("$threads_used/4");
-        threads_used++;
-        print(threads_used);
-        onThreadchange(threads_used);
-        String? folderDate;
+        String? folderDate = "-";
         String? title;
         try {
           folderDate = contents_a[i].querySelector("footer > time")?.text.trim().replaceAll(RegExp(r':'), '-');
@@ -101,6 +98,14 @@ class CybCrawl {
           folderDate = "-";
           print('Something really unknown: $e');
         }
+        
+        if (limiteDate.isNotEmpty && folderDate != "-" && limiteDate.compareTo(folderDate ?? "-") > 0) {
+          break;
+        }
+        print("$threads_used/4");
+        threads_used++;
+        print(threads_used);
+        onThreadchange(threads_used);
         Isolate? iso;
         iso = await Isolate.spawn(
           creator_parallel_download,
